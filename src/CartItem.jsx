@@ -7,44 +7,28 @@ const CartItem = ({ onContinueShopping }) => {
   const cart = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
 
-  // 🔹 Convert cost string "$15" → 15
-  const parseCost = (costString) => parseFloat(costString.replace("$", ""));
-
   // 🔹 Calcola il totale dell'intero carrello
   const calculateTotalAmount = () => {
     return cart
-      .reduce((total, item) => total + parseCost(item.cost) * item.quantity, 0)
+      .reduce((total, item) => total + item.cost * item.quantity, 0)
       .toFixed(2);
   };
 
   // 🔹 Torna alla pagina dei prodotti
   const handleContinueShopping = (e) => {
     e.preventDefault();
-    onContinueShopping(e);
+    onContinueShopping();
   };
 
-  // 🔹 Incrementa quantità
+  // 🔹 Incrementa la quantità (usa updateQuantity di Redux)
   const handleIncrement = (item) => {
-    dispatch(
-      updateQuantity({
-        name: item.name,
-        quantity: item.quantity + 1,
-      })
-    );
+    dispatch(updateQuantity({ name: item.name, quantity: item.quantity + 1 }));
   };
 
-  // 🔹 Decrementa quantità (se arriva a 0 → removeItem)
+  // 🔹 Decrementa quantità, ma non scende sotto 1
   const handleDecrement = (item) => {
     if (item.quantity > 1) {
-      dispatch(
-        updateQuantity({
-          name: item.name,
-          quantity: item.quantity - 1,
-        })
-      );
-    } else {
-      // quantità diventerebbe 0 → rimuovi
-      dispatch(removeItem(item.name));
+      dispatch(updateQuantity({ name: item.name, quantity: item.quantity - 1 }));
     }
   };
 
@@ -53,9 +37,9 @@ const CartItem = ({ onContinueShopping }) => {
     dispatch(removeItem(item.name));
   };
 
-  // 🔹 Subtotale per singolo item
+  // 🔹 Totale per singolo prodotto
   const calculateTotalCost = (item) => {
-    return (parseCost(item.cost) * item.quantity).toFixed(2);
+    return (item.cost * item.quantity).toFixed(2);
   };
 
   return (
@@ -74,7 +58,7 @@ const CartItem = ({ onContinueShopping }) => {
 
               <div className="cart-item-details">
                 <div className="cart-item-name">{item.name}</div>
-                <div className="cart-item-cost">{item.cost}</div>
+                <div className="cart-item-cost">${item.cost}</div>
 
                 <div className="cart-item-quantity">
                   <button
@@ -84,7 +68,9 @@ const CartItem = ({ onContinueShopping }) => {
                     -
                   </button>
 
-                  <span className="cart-item-quantity-value">{item.quantity}</span>
+                  <span className="cart-item-quantity-value">
+                    {item.quantity}
+                  </span>
 
                   <button
                     className="cart-item-button cart-item-button-inc"
@@ -115,9 +101,7 @@ const CartItem = ({ onContinueShopping }) => {
           Continue Shopping
         </button>
         <br />
-        <button className="get-started-button1">
-          Checkout
-        </button>
+        <button className="get-started-button1">Checkout</button>
       </div>
     </div>
   );
